@@ -23,6 +23,7 @@ func (p *Person) String() string {
 
 func PrintStringer(s fmt.Stringer) {
 	fmt.Println(s.String())
+	fmt.Println(s)
 }
 
 func main() {
