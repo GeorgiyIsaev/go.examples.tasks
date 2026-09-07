@@ -1,0 +1,66 @@
+Условие задачи
+Вам необходимо спроектировать систему для работы с хранилищем ключ-значение, которая поддерживает:
+
+Базовый интерфейс Storage:
+
+type Storage interface {
+    Get(key string) (interface{}, error)
+    Set(key string, value interface{}) error
+}
+Две реализации:
+
+MapStorage – хранит данные в памяти (map[string]interface{}), потокобезопасность не требуется.
+
+FileStorage – сохраняет данные в файл в формате JSON (при инициализации передаётся путь к файлу; при Set файл перезаписывается целиком; при Get читает весь файл и ищет ключ).
+
+Декораторы (обёртки):
+
+LoggingStorage – оборачивает любой Storage, логирует каждый вызов Get/Set (время, ключ, результат) в os.Stdout.
+
+MetricsStorage – оборачивает любой Storage, считает:
+
+общее количество вызовов Get и Set;
+
+количество ошибок для каждого метода.
+Реализуйте дополнительный интерфейс Metrics:
+
+type Metrics interface {
+    GetCalls() int
+    SetCalls() int
+    GetErrors() int
+    SetErrors() int
+}
+который должен быть реализован MetricsStorage.
+
+Функция‑конструктор:
+
+func NewStorage(kind string, config interface{}) (Storage, error)
+kind == "memory" – возвращает MapStorage (config игнорируется).
+
+kind == "file" – ожидает config как string с путём к файлу, возвращает FileStorage.
+
+kind == "logging" – ожидает config как Storage (уже существующее хранилище), возвращает LoggingStorage.
+
+kind == "metrics" – ожидает config как Storage, возвращает MetricsStorage.
+
+Любой другой kind возвращает ошибку.
+
+Функция для graceful shutdown:
+Напишите функцию CloseIfPossible(v interface{}), которая:
+
+проверяет, реализует ли v интерфейс io.Closer;
+
+если да – вызывает Close() и логирует результат (успех/ошибка);
+
+если нет – ничего не делает.
+Подсказка: FileStorage должен реализовывать io.Closer (закрывать файл), а MapStorage – нет.
+
+Демонстрация:
+
+Создайте цепочку: metrics(logging(file("data.json"))) – т.е. файловое хранилище, обёрнутое в логирование, а затем в метрики.
+
+Выполните несколько операций Set и Get.
+
+Извлеките объект Metrics из цепочки (используя type assertion) и выведите статистику.
+
+Закройте все ресурсы с помощью CloseIfPossible, передавая в неё корневое хранилище (сначала внешнюю обёртку, потом внутренние – нужно продумать, как закрыть все уровни; можно предложить вариант, где каждый декоратор тоже реализует Closer и делегирует вызов внутреннему, чтобы закрыть все).
