@@ -82,11 +82,13 @@ func main() {
 	nums := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	workers := 2
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	sum, err := Process(ctx, nums, workers)
 	if err != nil {
 		fmt.Println("Ошибка:", err)
 	}
+	cancel()
 	println("Результат", sum)
 
 }
