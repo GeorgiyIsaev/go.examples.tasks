@@ -23,8 +23,17 @@ func WorkerPool(ctx context.Context, jobs <-chan int, workers int, f func(int) i
 - Тест: закрыть jobs, прочитать всё из out, проверить отсутствие паники и утечек.
 
 
+5. Таймаут для функции через context/select
+   Задача: реализовать generic-функцию:
 
-
+```
+func DoWithTimeout[T any](ctx context.Context, timeout time.Duration, f func() (T, error)) (T, error)
+```
+Она запускает f в горутине. Если f успела — возвращает её результат. Если истёк таймаут или отменился ctx — возвращает ctx.Err(). Горутина не должна блокироваться навсегда.
+Тест:
+- f быстрая → результат f.
+- f дольше таймаута → context.DeadlineExceeded.
+- после таймаута горутина не висит, потому что канал буферизован.
 
 
 
