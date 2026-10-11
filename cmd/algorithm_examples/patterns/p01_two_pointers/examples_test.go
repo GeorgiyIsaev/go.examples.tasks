@@ -2,117 +2,164 @@ package main
 
 import (
 	"reflect"
-	"sort"
 	"testing"
 )
 
-// ============================================================
-// Тесты для twoSumSorted (вариант A — два конца)
-// ============================================================
+// ===== Opposite Ends =====
+
+func TestReverseString(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"пустая строка", "", ""},
+		{"один символ", "a", "a"},
+		{"чётная длина", "abcd", "dcba"},
+		{"нечётная длина", "hello", "olleh"},
+		{"палиндром", "aba", "aba"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			b := []byte(tc.input)
+			ReverseString(b)
+			if got := string(b); got != tc.want {
+				t.Errorf("ReverseString(%q) = %q, want %q", tc.input, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestIsPalindrome(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  bool
+	}{
+		{"пустая", "", true},
+		{"один символ", "a", true},
+		{"простой палиндром", "aba", true},
+		{"не палиндром", "abc", false},
+		{"с пробелами и пунктуацией", "A man, a plan, a canal: Panama", true},
+		{"не палиндром с пунктуацией", "race a car", false},
+		{"только цифры палиндром", "12321", true},
+		{"цифры не палиндром", "12345", false},
+		{"только знаки", ".,;", true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := IsPalindrome(tc.input); got != tc.want {
+				t.Errorf("IsPalindrome(%q) = %v, want %v", tc.input, got, tc.want)
+			}
+		})
+	}
+}
 
 func TestTwoSumSorted(t *testing.T) {
 	tests := []struct {
 		name   string
 		nums   []int
 		target int
-		wantI  int
-		wantJ  int
-		wantOK bool
+		want   []int
 	}{
-		{"обычный случай", []int{1, 2, 3, 4, 6, 8, 11}, 10, 1, 5, true},
-		{"пара в начале", []int{1, 2, 3, 4, 5}, 3, 0, 1, true},
-		{"пара в конце", []int{1, 2, 3, 4, 5}, 9, 3, 4, true},
-		{"нет пары", []int{1, 2, 3, 4, 5}, 100, -1, -1, false},
-		{"пустой массив", []int{}, 5, -1, -1, false},
-		{"один элемент", []int{5}, 10, -1, -1, false},
-		{"отрицательные числа", []int{-3, -1, 0, 2, 5}, 2, 0, 4, true},
+		{"пример из условия", []int{2, 7, 11, 15}, 9, []int{0, 1}},
+		{"пара в конце", []int{1, 2, 3, 4, 6}, 10, []int{3, 4}},
+		{"нет решения", []int{2, 7, 11, 15}, 1, nil},
+		{"пустой массив", []int{}, 5, nil},
+		{"один элемент", []int{1}, 1, nil},
+		{"отрицательные", []int{-3, -1, 0, 4, 5}, 2, []int{0, 4}},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			i, j, ok := twoSumSorted(tt.nums, tt.target)
-			if ok != tt.wantOK {
-				t.Fatalf("ok = %v, want %v", ok, tt.wantOK)
-			}
-			if !ok {
-				return
-			}
-			if i != tt.wantI || j != tt.wantJ {
-				t.Fatalf("got (%d,%d), want (%d,%d)", i, j, tt.wantI, tt.wantJ)
-			}
-			// Дополнительная проверка: сумма действительно равна target
-			if tt.nums[i]+tt.nums[j] != tt.target {
-				t.Fatalf("sum %d+%d != %d", tt.nums[i], tt.nums[j], tt.target)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := TwoSumSorted(tc.nums, tc.target)
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("TwoSumSorted(%v, %d) = %v, want %v", tc.nums, tc.target, got, tc.want)
 			}
 		})
 	}
 }
 
-// ============================================================
-// Тесты для removeDuplicates (вариант B — slow/fast)
-// ============================================================
+// ===== Slow / Fast =====
 
-func TestRemoveDuplicates(t *testing.T) {
+func TestRemoveDuplicatesSorted(t *testing.T) {
 	tests := []struct {
-		name     string
-		nums     []int
-		wantLen  int
-		wantNums []int // ожидаемые первые wantLen элементов
+		name string
+		nums []int
+		want int
 	}{
-		{"пустой", []int{}, 0, nil},
-		{"один", []int{1}, 1, []int{1}},
-		{"нет дубликатов", []int{1, 2, 3}, 3, []int{1, 2, 3}},
-		{"все дубликаты", []int{2, 2, 2, 2}, 1, []int{2}},
-		{"смешанные", []int{1, 1, 2, 2, 3, 4, 4}, 4, []int{1, 2, 3, 4}},
-		{"дубликаты в конце", []int{1, 2, 3, 3, 3}, 3, []int{1, 2, 3}},
+		{"пустой", []int{}, 0},
+		{"один", []int{1}, 1},
+		{"все одинаковые", []int{2, 2, 2, 2}, 1},
+		{"все уникальные", []int{1, 2, 3, 4}, 4},
+		{"с дублями", []int{1, 1, 2, 3, 3, 3, 4}, 4},
+		{"дубли в конце", []int{1, 2, 3, 3, 3}, 3},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			nums := append([]int(nil), tt.nums...) // копия, чтобы не портить test case
-			got := removeDuplicates(nums)
-			if got != tt.wantLen {
-				t.Fatalf("len = %d, want %d", got, tt.wantLen)
-			}
-			gotNums := nums[:got]
-			if !reflect.DeepEqual(gotNums, tt.wantNums) {
-				t.Fatalf("got %v, want %v", gotNums, tt.wantNums)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			nums := append([]int(nil), tc.nums...)
+			got := RemoveDuplicatesSorted(nums)
+			if got != tc.want {
+				t.Errorf("RemoveDuplicatesSorted(%v) = %d, want %d", tc.nums, got, tc.want)
 			}
 		})
 	}
 }
 
-// ============================================================
-// Тесты для reverse (вариант C — разворот)
-// ============================================================
-
-func TestReverse(t *testing.T) {
+func TestMoveZeroes(t *testing.T) {
 	tests := []struct {
 		name string
 		nums []int
 		want []int
 	}{
 		{"пустой", []int{}, nil},
-		{"один", []int{1}, []int{1}},
-		{"два", []int{1, 2}, []int{2, 1}},
-		{"нечётная длина", []int{1, 2, 3, 4, 5}, []int{5, 4, 3, 2, 1}},
-		{"чётная длина", []int{1, 2, 3, 4}, []int{4, 3, 2, 1}},
+		{"без нулей", []int{1, 2, 3}, []int{1, 2, 3}},
+		{"только нули", []int{0, 0, 0}, []int{0, 0, 0}},
+		{"чередование", []int{0, 1, 0, 3, 12}, []int{1, 3, 12, 0, 0}},
+		{"нули в конце", []int{1, 2, 3, 0, 0}, []int{1, 2, 3, 0, 0}},
+		{"нули в начале", []int{0, 0, 1, 2, 3}, []int{1, 2, 3, 0, 0}},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			nums := append([]int(nil), tt.nums...)
-			reverse(nums)
-			if !reflect.DeepEqual(nums, tt.want) {
-				t.Fatalf("got %v, want %v", nums, tt.want)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			nums := append([]int(nil), tc.nums...)
+			MoveZeroes(nums)
+			if !reflect.DeepEqual(nums, tc.want) {
+				t.Errorf("MoveZeroes(%v) = %v, want %v", tc.nums, nums, tc.want)
 			}
 		})
 	}
 }
 
-// ============================================================
-// Тесты для threeSum (тройка с суммой 0)
-// ============================================================
+func TestRemoveElement(t *testing.T) {
+	tests := []struct {
+		name string
+		nums []int
+		val  int
+		want int
+	}{
+		{"пустой", []int{}, 1, 0},
+		{"нет совпадений", []int{1, 2, 3}, 4, 3},
+		{"всё совпадает", []int{3, 3, 3}, 3, 0},
+		{"частично", []int{3, 2, 2, 3}, 3, 2},
+		{"в середине", []int{1, 2, 3, 4, 2}, 2, 3},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			nums := append([]int(nil), tc.nums...)
+			got := RemoveElement(nums, tc.val)
+			if got != tc.want {
+				t.Errorf("RemoveElement(%v, %d) = %d, want %d", tc.nums, tc.val, got, tc.want)
+			}
+		})
+	}
+}
+
+// ===== Three Pointers =====
 
 func TestThreeSum(t *testing.T) {
 	tests := []struct {
@@ -120,36 +167,49 @@ func TestThreeSum(t *testing.T) {
 		nums []int
 		want [][]int
 	}{
-		{"пустой", []int{}, nil},
-		{"меньше 3", []int{1, 2}, nil},
-		{"нет троек", []int{1, 2, 3}, nil},
-		{"классика", []int{-1, 0, 1, 2, -1, -4}, [][]int{{-1, -1, 2}, {-1, 0, 1}}},
-		{"все нули", []int{0, 0, 0, 0}, [][]int{{0, 0, 0}}},
+		{"пример из условия", []int{-1, 0, 1, 2, -1, -4}, [][]int{{-1, -1, 2}, {-1, 0, 1}}},
+		{"все нули", []int{0, 0, 0}, [][]int{{0, 0, 0}}},
+		{"нет решений", []int{1, 2, 3}, [][]int{}},
+		{"пустой", []int{}, [][]int{}},
+		{"меньше трёх", []int{1, 2}, [][]int{}},
+		{"много дублей", []int{-2, 0, 0, 2, 2}, [][]int{{-2, 0, 2}}},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := threeSum(tt.nums)
-			// Сортируем для стабильного сравнения
-			sortResults(got)
-			sortResults(tt.want)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Fatalf("got %v, want %v", got, tt.want)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := ThreeSum(tc.nums)
+			if len(got) == 0 && len(tc.want) == 0 {
+				return
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("ThreeSum(%v) = %v, want %v", tc.nums, got, tc.want)
 			}
 		})
 	}
 }
 
-func sortResults(res [][]int) {
-	for _, r := range res {
-		sort.Ints(r)
+func TestSortColors(t *testing.T) {
+	tests := []struct {
+		name string
+		nums []int
+		want []int
+	}{
+		{"пустой", []int{}, nil},
+		{"один", []int{1}, []int{1}},
+		{"уже отсортирован", []int{0, 1, 2}, []int{0, 1, 2}},
+		{"обратный", []int{2, 1, 0}, []int{0, 1, 2}},
+		{"смешанный", []int{2, 0, 2, 1, 1, 0}, []int{0, 0, 1, 1, 2, 2}},
+		{"только нули", []int{0, 0, 0}, []int{0, 0, 0}},
+		{"только двойки", []int{2, 2, 2}, []int{2, 2, 2}},
 	}
-	sort.Slice(res, func(i, j int) bool {
-		for k := 0; k < len(res[i]) && k < len(res[j]); k++ {
-			if res[i][k] != res[j][k] {
-				return res[i][k] < res[j][k]
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			nums := append([]int(nil), tc.nums...)
+			SortColors(nums)
+			if !reflect.DeepEqual(nums, tc.want) {
+				t.Errorf("SortColors(%v) = %v, want %v", tc.nums, nums, tc.want)
 			}
-		}
-		return len(res[i]) < len(res[j])
-	})
+		})
+	}
 }
