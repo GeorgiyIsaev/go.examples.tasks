@@ -4,7 +4,7 @@ import "fmt"
 
 // Запуск: go run ./cycle_detection
 func main() {
-	fmt.Println("=== 03. Fast / Slow / Cycle Detection (Floyd's) ===")
+	fmt.Println("=== 02. Fast / Slow / Cycle Detection (Floyd's) ===")
 	fmt.Println()
 
 	// Список без цикла: 1 -> 2 -> 3 -> 4

@@ -4,7 +4,7 @@ import "fmt"
 
 // Запуск: go run ./middle_find
 func main() {
-	fmt.Println("=== 03. Fast / Slow / Middle Find (середина списка) ===")
+	fmt.Println("=== 02. Fast / Slow / Middle Find (середина списка) ===")
 	fmt.Println()
 
 	odd := BuildList([]int{1, 2, 3, 4, 5})

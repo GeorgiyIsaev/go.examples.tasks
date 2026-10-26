@@ -4,7 +4,7 @@ import "fmt"
 
 // Запуск: go run ./fixed_window
 func main() {
-	fmt.Println("=== 02. Sliding Window / Fixed (фиксированное окно) ===")
+	fmt.Println("=== 03. Sliding Window / Fixed (фиксированное окно) ===")
 	fmt.Println()
 
 	fmt.Printf("MaxSumSubarrayOfSizeK([2,1,5,1,3,2], 3)   = %d\n",

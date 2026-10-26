@@ -4,7 +4,7 @@ import "fmt"
 
 // Запуск: go run ./variable_window
 func main() {
-	fmt.Println("=== 02. Sliding Window / Variable (растущее окно, максимум) ===")
+	fmt.Println("=== 03. Sliding Window / Variable (растущее окно, максимум) ===")
 	fmt.Println()
 
 	fmt.Printf("LengthOfLongestSubstring(\"abcabcbb\")           = %d\n",
