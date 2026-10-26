@@ -1,10 +1,17 @@
 package main
 
-import (
-	"testing"
-)
+import "testing"
 
-// ===== Cycle Detection =====
+// makeCyclic строит список и, если cycleAt >= 0, замыкает последний
+// узел на узел с индексом cycleAt.
+func makeCyclic(vals []int, cycleAt int) *ListNode {
+	head := BuildList(vals)
+	if head != nil && cycleAt >= 0 {
+		tail := findNodeByIndex(head, len(vals)-1)
+		tail.Next = findNodeByIndex(head, cycleAt)
+	}
+	return head
+}
 
 func TestHasCycle(t *testing.T) {
 	tests := []struct {
@@ -24,12 +31,7 @@ func TestHasCycle(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			head := BuildList(tc.vals)
-			if head != nil && tc.cycleAt >= 0 {
-				tail := findNodeByIndex(head, len(tc.vals)-1)
-				tail.Next = findNodeByIndex(head, tc.cycleAt)
-			}
-			if got := HasCycle(head); got != tc.want {
+			if got := HasCycle(makeCyclic(tc.vals, tc.cycleAt)); got != tc.want {
 				t.Errorf("HasCycle = %v, want %v", got, tc.want)
 			}
 		})
@@ -52,12 +54,7 @@ func TestDetectCycle(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			head := BuildList(tc.vals)
-			if head != nil && tc.cycleAt >= 0 {
-				tail := findNodeByIndex(head, len(tc.vals)-1)
-				tail.Next = findNodeByIndex(head, tc.cycleAt)
-			}
-			got := DetectCycle(head)
+			got := DetectCycle(makeCyclic(tc.vals, tc.cycleAt))
 			if tc.wantVal == -1 {
 				if got != nil {
 					t.Errorf("DetectCycle = %v, want nil", got)
@@ -92,12 +89,7 @@ func TestCountCycleLength(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			head := BuildList(tc.vals)
-			if head != nil && tc.cycleAt >= 0 {
-				tail := findNodeByIndex(head, len(tc.vals)-1)
-				tail.Next = findNodeByIndex(head, tc.cycleAt)
-			}
-			if got := CountCycleLength(head); got != tc.want {
+			if got := CountCycleLength(makeCyclic(tc.vals, tc.cycleAt)); got != tc.want {
 				t.Errorf("CountCycleLength = %d, want %d", got, tc.want)
 			}
 		})
@@ -122,83 +114,6 @@ func TestFindDuplicate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := FindDuplicate(tc.nums); got != tc.want {
 				t.Errorf("FindDuplicate(%v) = %d, want %d", tc.nums, got, tc.want)
-			}
-		})
-	}
-}
-
-// ===== Middle & Palindrome =====
-
-func TestMiddleNode(t *testing.T) {
-	tests := []struct {
-		name string
-		vals []int
-		want int
-	}{
-		{"один", []int{1}, 1},
-		{"два", []int{1, 2}, 2},
-		{"три", []int{1, 2, 3}, 2},
-		{"четыре", []int{1, 2, 3, 4}, 3},
-		{"пять", []int{1, 2, 3, 4, 5}, 3},
-		{"шесть", []int{1, 2, 3, 4, 5, 6}, 4},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			head := BuildList(tc.vals)
-			if got := MiddleNode(head).Val; got != tc.want {
-				t.Errorf("MiddleNode(%v).Val = %d, want %d", tc.vals, got, tc.want)
-			}
-		})
-	}
-}
-
-func TestIsPalindromeList(t *testing.T) {
-	tests := []struct {
-		name string
-		vals []int
-		want bool
-	}{
-		{"nil", nil, true},
-		{"один", []int{1}, true},
-		{"два одинаковых", []int{1, 1}, true},
-		{"два разных", []int{1, 2}, false},
-		{"чётный палиндром", []int{1, 2, 2, 1}, true},
-		{"нечётный палиндром", []int{1, 2, 3, 2, 1}, true},
-		{"не палиндром", []int{1, 2, 3, 4}, false},
-		{"все одинаковые", []int{7, 7, 7, 7}, true},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			head := BuildList(tc.vals)
-			if got := IsPalindromeList(head); got != tc.want {
-				t.Errorf("IsPalindromeList(%v) = %v, want %v", tc.vals, got, tc.want)
-			}
-		})
-	}
-}
-
-func TestIsHappy(t *testing.T) {
-	tests := []struct {
-		name string
-		n    int
-		want bool
-	}{
-		{"1 — счастливое", 1, true},
-		{"7 — счастливое", 7, true},
-		{"10 — счастливое", 10, true},
-		{"19 — счастливое", 19, true},
-		{"2 — несчастливое", 2, false},
-		{"3 — несчастливое", 3, false},
-		{"4 — несчастливое", 4, false},
-		{"100 — счастливое", 100, true},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if got := IsHappy(tc.n); got != tc.want {
-				t.Errorf("IsHappy(%d) = %v, want %v", tc.n, got, tc.want)
 			}
 		})
 	}

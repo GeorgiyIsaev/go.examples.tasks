@@ -99,3 +99,22 @@ func FindDuplicate(nums []int) int {
 	}
 	return slow
 }
+
+// CountCycleLength — длина цикла в списке (если он есть).
+// 0, если цикла нет. Полезно для задач, где нужно знать размер цикла.
+func CountCycleLength(head *ListNode) int {
+	slow, fast := head, head
+	for fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+		if slow == fast {
+			// Нашли точку внутри цикла. Считаем длину.
+			length := 1
+			for cur := slow.Next; cur != slow; cur = cur.Next {
+				length++
+			}
+			return length
+		}
+	}
+	return 0
+}
